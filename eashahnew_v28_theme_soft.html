@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>إدارة الإعاشة - المحفظة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F4F7FC;
+  --surface: #FFFFFF;
+  --primary: #4318FF;
+  --primary-gradient: linear-gradient(135deg, #4318FF 0%, #868CFF 100%);
+  --text-main: #1B254B;
+  --text-sec: #A3AED0;
+  --success: #05CD99;
+  --danger: #EE5D50;
+  --warning: #FFCE20;
+  --border: #E0E5F2;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --shadow-sm: 0px 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0px 18px 40px rgba(112, 144, 176, 0.12);
+  --nav-height: 70px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text-main); padding-bottom: calc(var(--nav-height) + 30px); }
+
+/* Top Header */
+.top-header { padding: 24px 20px 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: opacity 0.2s; }
+.top-header:active { opacity: 0.7; }
+.top-header h1 { font-size: 22px; font-weight: 800; color: var(--text-main); margin-bottom: 2px; }
+.top-header .user-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--primary-gradient); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; box-shadow: var(--shadow-sm); }
+
+main { padding: 0 20px; }
+.section { display: none; animation: fadeUp 0.4s ease forwards; }
+.section.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Wallet Card Concept */
+.wallet-card { background: var(--primary-gradient); border-radius: var(--radius-lg); padding: 24px; color: white; position: relative; overflow: hidden; box-shadow: 0 14px 32px rgba(67, 24, 255, 0.25); margin-bottom: 24px; }
+.wallet-card::after { content: ''; position: absolute; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; top: -50px; left: -50px; }
+.wallet-card-header { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; margin-bottom: 24px; }
+.wallet-card-header select { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: 12px; outline: none; font-family: inherit; font-weight: 700; font-size: 14px; backdrop-filter: blur(4px); max-width: 150px; }
+.wallet-card-header select option { color: var(--text-main); }
+.balance-label { font-size: 14px; opacity: 0.9; font-weight: 600; margin-bottom: 4px; display: block; }
+.balance-value { font-size: 38px; font-weight: 900; line-height: 1; position: relative; z-index: 2; margin-bottom: 8px; }
+.balance-value span { font-size: 18px; font-weight: 700; opacity: 0.9; }
+.wallet-stats { display: flex; justify-content: space-between; margin-top: 24px; position: relative; z-index: 2; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px; }
+.w-stat { display: flex; flex-direction: column; }
+.w-stat span { font-size: 12px; opacity: 0.9; margin-bottom: 2px; }
+.w-stat b { font-size: 16px; font-weight: 800; }
+
+/* Quick Actions */
+.quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
+.action-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; border: none; background: transparent; cursor: pointer; }
+.action-icon { width: 56px; height: 56px; background: var(--surface); border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); color: var(--primary); transition: transform 0.2s; }
+.action-btn:active .action-icon { transform: scale(0.9); }
+.action-icon svg { width: 24px; height: 24px; stroke-width: 2.2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.action-btn span { font-size: 13px; font-weight: 800; color: var(--text-main); font-family: inherit; }
+
+/* Section Titles & Small Buttons */
+.sec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.sec-header h3 { font-size: 18px; font-weight: 900; }
+.sec-header .badge { background: rgba(67, 24, 255, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 800; }
+.btn-sm { background: var(--primary-gradient); color: white; border: none; padding: 8px 14px; border-radius: 10px; font-family: inherit; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-sm:active { transform: scale(0.95); }
+
+/* Lists & Rows */
+.list-container { display: flex; flex-direction: column; gap: 12px; }
+.list-item { background: var(--surface); border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); transition: 0.2s; flex-wrap: wrap; }
+.item-main { display: flex; align-items: center; gap: 14px; width: 100%; }
+.item-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 800; font-size: 16px; }
+.icon-blue { background: rgba(67, 24, 255, 0.1); color: var(--primary); }
+.icon-red { background: rgba(238, 93, 80, 0.1); color: var(--danger); }
+.icon-green { background: rgba(5, 205, 153, 0.1); color: var(--success); }
+.item-content { flex: 1; }
+.item-content h4 { font-size: 15px; font-weight: 800; margin-bottom: 4px; color: var(--text-main); }
+.item-content p { font-size: 12px; color: var(--text-sec); font-weight: 700; line-height: 1.4; }
+
+/* Activity specific styles */
+.act-title-blue { color: var(--primary) !important; font-weight: 800 !important; font-size: 11px !important; }
+.act-title-red { color: var(--danger) !important; font-weight: 800 !important; font-size: 11px !important; }
+.act-title-green { color: var(--success) !important; font-weight: 800 !important; font-size: 11px !important; }
+
+.item-trailing { text-align: left; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.item-trailing b { font-size: 15px; font-weight: 800; }
+.status-badge { font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 800; }
+.status-paid { background: rgba(5, 205, 153, 0.15); color: #047857; }
+.status-unpaid { background: rgba(238, 93, 80, 0.15); color: #b91c1c; }
+
+/* Action Buttons within Lists */
+.action-row { display: flex; gap: 6px; margin-top: 4px; justify-content: flex-end; }
+.btn-icon { width: 32px; height: 32px; border: none; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(163, 174, 208, 0.15); color: var(--text-sec); transition: 0.2s; }
+.btn-icon:active { transform: scale(0.9); }
+.btn-icon.edit { color: var(--primary); background: rgba(67, 24, 255, 0.1); }
+.btn-icon.delete { color: var(--danger); background: rgba(238, 93, 80, 0.1); }
+.btn-icon.more { color: var(--text-main); background: rgba(163, 174, 208, 0.25); }
+.btn-icon svg { width: 16px; height: 16px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Filter Tabs */
+.tabs { display: flex; background: var(--border); border-radius: 12px; padding: 4px; margin-bottom: 16px; }
+.tab { flex: 1; border: none; background: transparent; padding: 10px; font-family: inherit; font-weight: 800; color: var(--text-sec); border-radius: 10px; cursor: pointer; transition: 0.3s; }
+.tab.active { background: var(--surface); color: var(--text-main); box-shadow: var(--shadow-sm); }
+
+/* Floating Bottom Nav (Pill Style) */
+.pill-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; height: var(--nav-height); background: var(--text-main); border-radius: 35px; display: flex; justify-content: space-around; align-items: center; padding: 0 10px; box-shadow: 0 20px 40px rgba(27, 37, 75, 0.2); z-index: 100; }
+.nav-item { border: none; background: transparent; color: var(--text-sec); padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; transition: color 0.3s; }
+.nav-item svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.nav-item.active { color: white; }
+.nav-item.active::after { content: ''; position: absolute; bottom: -2px; width: 4px; height: 4px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 8px var(--primary); }
+
+/* Forms & Inputs */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 800; color: var(--text-sec); margin-bottom: 8px; }
+.form-group input, .form-group select { width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); font-family: inherit; font-size: 15px; font-weight: 700; outline: none; transition: 0.2s; }
+.form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67, 24, 255, 0.1); }
+.btn-primary { width: 100%; padding: 16px; border-radius: 16px; background: var(--primary-gradient); color: white; border: none; font-family: inherit; font-weight: 900; font-size: 16px; cursor: pointer; margin-top: 10px; box-shadow: 0 10px 20px rgba(67, 24, 255, 0.2); transition: 0.2s; }
+.btn-primary:active { transform: scale(0.97); }
+
+/* Bottom Sheet Modals */
+.modal-overlay { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(27, 37, 75, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 200; display: none; align-items: flex-end; }
+.modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+.bottom-sheet { width: 100%; background: var(--surface); border-radius: 32px 32px 0 0; padding: 24px; max-height: 90vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.modal-overlay.active .bottom-sheet { transform: translateY(0); }
+.sheet-indicator { width: 40px; height: 5px; background: var(--border); border-radius: 10px; margin: 0 auto 20px; }
+.sheet-title { font-size: 20px; font-weight: 900; margin-bottom: 24px; text-align: center; }
+
+/* Status Menu Design */
+.status-menu-list { display: flex; flex-direction: column; }
+.status-menu-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 8px; border-bottom: 1px solid var(--border); background: transparent; border: none; width: 100%; font-family: inherit; font-size: 18px; font-weight: 800; color: var(--text-main); cursor: pointer; transition: 0.2s; }
+.status-menu-item:active { background: rgba(0,0,0,0.02); }
+.status-menu-item:last-child { border-bottom: none; }
+.status-icon-box { width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+.status-icon-box svg { width: 28px; height: 28px; stroke-width: 2.5; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.bg-green-soft { background: #E6F4EA; color: #1E8E3E; }
+.bg-red-soft { background: #FCE8E6; color: #D93025; }
+.bg-yellow-soft { background: #FEF7E0; color: #F9AB00; }
+.bg-blue-soft { background: #E8F0FE; color: #1A73E8; }
+.btn-cancel-large { width: 100%; padding: 18px; border-radius: 16px; background: #F1F3F4; color: var(--text-main); border: none; font-family: inherit; font-weight: 900; font-size: 18px; cursor: pointer; margin-top: 16px; transition: 0.2s; }
+.btn-cancel-large:active { background: #E8EAED; }
+
+.report-box { background: white; padding: 16px; border-radius: 16px; border: 1px solid var(--border); }
+.report-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+.report-table th, .report-table td { padding: 10px; text-align: right; border-bottom: 1px solid var(--border); }
+.report-table th { color: var(--text-sec); font-weight: 800; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-sec); }
+
+/* v20 glass stat widgets + progress */
+.wallet-stats{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important;border-top:1px solid rgba(255,255,255,0.18)!important;padding-top:16px!important}
+.w-stat{min-height:64px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:16px;padding:9px 10px;display:grid!important;grid-template-columns:28px 1fr;align-items:center;column-gap:8px}
+.w-stat .glass-icon{width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:#fff;opacity:.95;grid-row:1/3}
+.w-stat .glass-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.w-stat span{font-size:11px!important;opacity:.9!important;margin:0!important;text-align:right}
+.w-stat b{font-size:14px!important;font-weight:900!important;text-align:right;line-height:1.25}
+.collection-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 14px}
+.collection-summary-card{position:relative;overflow:hidden;min-height:82px;background:rgba(255,255,255,.74);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:var(--shadow-sm);padding:12px;display:grid;grid-template-columns:32px 1fr;align-items:center;column-gap:9px}
+.collection-summary-card::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.45),transparent);pointer-events:none}
+.collection-summary-card .summary-icon{position:relative;z-index:1;width:32px;height:32px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.collection-summary-card .summary-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.collection-summary-card .summary-content{position:relative;z-index:1;text-align:right}
+.collection-summary-card .summary-label{display:block;color:var(--text-sec);font-size:12px;font-weight:800;margin-bottom:3px}
+.collection-summary-card .summary-value{display:block;font-size:18px;font-weight:900;color:var(--text-main);line-height:1.2}
+.summary-green{background:linear-gradient(135deg,rgba(5,205,153,.14),rgba(255,255,255,.9))}
+.summary-green .summary-icon{color:var(--success);background:rgba(5,205,153,.12)}
+.summary-orange{background:linear-gradient(135deg,rgba(255,206,32,.16),rgba(255,255,255,.9))}
+.summary-orange .summary-icon{color:#D98A00;background:rgba(255,206,32,.15)}
+.summary-blue{background:linear-gradient(135deg,rgba(67,24,255,.12),rgba(255,255,255,.9))}
+.summary-blue .summary-icon{color:var(--primary);background:rgba(67,24,255,.10)}
+.summary-purple{background:linear-gradient(135deg,rgba(134,140,255,.14),rgba(255,255,255,.9))}
+.summary-purple .summary-icon{color:#6B4CFF;background:rgba(134,140,255,.13)}
+.progress-card{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-sm);border-radius:18px;padding:14px;margin:0 0 14px}
+.progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.progress-head span{color:var(--text-sec);font-size:12px;font-weight:800}
+.progress-head b{color:var(--primary);font-size:16px;font-weight:900}
+.progress-track{width:100%;height:9px;border-radius:999px;background:rgba(67,24,255,.10);overflow:hidden}
+.progress-fill{height:100%;width:0%;border-radius:999px;background:var(--primary-gradient);transition:width .35s ease}
+
+
+/* v21 balance wallet glass widgets + force detail summary visible */
+.wallet-card{
+  padding:24px 18px!important;
+}
+.wallet-stats{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;
+  border-top:1px solid rgba(255,255,255,0.18)!important;
+  padding-top:16px!important;
+  overflow:visible!important;
+}
+.w-stat{
+  min-width:0!important;
+  min-height:70px!important;
+  border:1px solid rgba(255,255,255,0.25)!important;
+  background:rgba(255,255,255,0.10)!important;
+  border-radius:15px!important;
+  padding:8px 7px!important;
+  display:grid!important;
+  grid-template-columns:24px 1fr!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+  column-gap:6px!important;
+  overflow:hidden!important;
+}
+.w-stat .glass-icon{
+  width:24px!important;
+  height:24px!important;
+  grid-row:1/3!important;
+  color:#fff!important;
+  opacity:.95!important;
+}
+.w-stat .glass-icon svg{
+  width:20px!important;
+  height:20px!important;
+}
+.w-stat span:not(.glass-icon){
+  font-size:10.5px!important;
+  font-weight:700!important;
+  white-space:nowrap!important;
+  text-align:right!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.w-stat b{
+  font-size:13px!important;
+  line-height:1.2!important;
+  text-align:right!important;
+  white-space:normal!important;
+}
+
+/* show detail info right after title and before filters */
+#collectionDetailInfo{
+  display:block;
+  margin:12px 0 14px;
+}
+.collection-summary-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin:0 0 12px!important;
+}
+.collection-summary-card{
+  min-width:0;
+  min-height:78px!important;
+  border-radius:18px!important;
+  padding:11px!important;
+}
+.collection-summary-card .summary-icon{
+  width:30px!important;
+  height:30px!important;
+}
+.collection-summary-card .summary-value{
+  font-size:17px!important;
+}
+.progress-card{
+  margin:0 0 12px!important;
+}
+
+
+/* v22 clean glass boxes + status icons */
+.w-stat{
+  grid-template-columns:1fr!important;
+  grid-template-rows:auto auto auto!important;
+  text-align:center!important;
+  justify-items:center!important;
+  padding:10px 8px!important;
+}
+.w-stat .glass-icon{display:none!important}
+.w-stat span:not(.glass-icon){
+  text-align:center!important;
+  font-size:11px!important;
+  max-width:100%;
+}
+.w-stat b{
+  text-align:center!important;
+  font-size:15px!important;
+}
+.status-avatar{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.status-avatar svg{
+  width:28px;
+  height:28px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.6;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.status-avatar.paid{background:rgba(5,205,153,.14);color:#047857}
+.status-avatar.unpaid{background:rgba(238,93,80,.14);color:#b91c1c}
+.status-avatar.leave{background:#FFF8E1;color:#D98A00}
+.status-avatar.exempt{background:rgba(67,24,255,.12);color:var(--primary)}
+#paymentsList .status-badge{display:none!important}
+.share-icon-inline{
+  width:20px;
+  height:20px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.3;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  margin-inline-start:6px;
+  vertical-align:middle;
+}
+
+
+/* v23 icon size refinement + report share fix */
+#recentActivityList .item-icon{
+  width:42px!important;
+  height:42px!important;
+  border-radius:12px!important;
+}
+#recentActivityList .item-icon svg{
+  width:24px!important;
+  height:24px!important;
+  stroke-width:1.8!important;
+}
+.status-avatar{
+  width:46px!important;
+  height:46px!important;
+  border-radius:15px!important;
+}
+.status-avatar svg{
+  width:23px!important;
+  height:23px!important;
+  stroke-width:2.15!important;
+}
+#paymentsList .btn-icon svg{
+  width:15px!important;
+  height:15px!important;
+  stroke-width:2!important;
+}
+
+
+/* v24 smaller activity and status icons */
+#recentActivityList .item-icon{
+  width:38px!important;
+  height:38px!important;
+  border-radius:11px!important;
+}
+#recentActivityList .item-icon svg{
+  width:21px!important;
+  height:21px!important;
+  stroke-width:1.65!important;
+}
+.status-avatar{
+  width:42px!important;
+  height:42px!important;
+  border-radius:14px!important;
+}
+.status-avatar svg{
+  width:21px!important;
+  height:21px!important;
+  stroke-width:2!important;
+}
+
+
+/* v25 A4 share report styling */
+.report-box{
+  background:#fff!important;
+}
+.report-a4{
+  width:794px;
+  min-height:1123px;
+  background:#fff;
+  color:#1B254B;
+  padding:58px 56px;
+  direction:rtl;
+  font-family:'Cairo',sans-serif;
+  box-sizing:border-box;
+}
+.report-a4 .report-title{
+  text-align:center;
+  margin-bottom:24px;
+}
+.report-a4 .report-title h2{
+  font-size:26px;
+  font-weight:900;
+  margin:0 0 4px;
+}
+.report-a4 .report-title h3{
+  font-size:21px;
+  font-weight:800;
+  margin:0 0 6px;
+}
+.report-a4 .report-title p{
+  color:#8A94A6;
+  font-size:13px;
+  font-weight:700;
+}
+.report-a4 table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:22px;
+  font-size:15px;
+}
+.report-a4 th{
+  color:#6B7280;
+  font-weight:800;
+  text-align:right;
+  padding:10px 12px;
+  border-bottom:1px solid #E5E7EB;
+  background:transparent!important;
+}
+.report-a4 td{
+  padding:9px 12px;
+  border-bottom:1px solid #EEF2F7;
+  background:transparent!important;
+}
+.report-a4 tbody tr:nth-child(even),
+.report-a4 tbody tr:nth-child(odd){
+  background:transparent!important;
+}
+.report-a4 .muted-name{
+  color:#6B7280;
+  font-weight:700;
+}
+.report-a4 .amount-cell{
+  color:#4B5563;
+  font-weight:800;
+}
+.report-a4 .status-cell{
+  font-weight:800;
+}
+.report-a4-footer{
+  position:absolute;
+  bottom:36px;
+  left:56px;
+  right:56px;
+  text-align:center;
+  color:#A3AED0;
+  font-size:12px;
+  font-weight:700;
+}
+@media screen{
+  #printArea.report-a4{
+    width:100%;
+    min-height:auto;
+    padding:22px 16px;
+    border-radius:16px;
+  }
+  #printArea.report-a4 .report-title h2{font-size:21px}
+  #printArea.report-a4 .report-title h3{font-size:18px}
+  #printArea.report-a4 table{font-size:13px}
+}
+
+
+/* v26 theme picker */
+.theme-picker{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  margin-top:8px;
+}
+.theme-option{
+  height:46px;
+  border-radius:16px;
+  border:3px solid transparent;
+  cursor:pointer;
+  box-shadow:var(--shadow-sm);
+  position:relative;
+}
+.theme-option.active{
+  border-color:var(--text-main);
+}
+.theme-option.active::after{
+  content:"✓";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-weight:900;
+  font-size:18px;
+}
+.theme-violet{background:linear-gradient(135deg,#4318FF,#868CFF)}
+.theme-emerald{background:linear-gradient(135deg,#059669,#34D399)}
+.theme-sky{background:linear-gradient(135deg,#0284C7,#38BDF8)}
+.theme-gold{background:linear-gradient(135deg,#D97706,#FBBF24)}
+.theme-navy{background:linear-gradient(135deg,#111827,#334155)}
+.report-a4-footer{display:none!important}
+
+
+/* v28 softer theme swatches */
+.theme-picker{
+  grid-template-columns:repeat(5,42px)!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+}
+.theme-option{
+  width:42px!important;
+  height:42px!important;
+  border-radius:14px!important;
+  border:2px solid transparent!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+.theme-option.active{
+  border-color:rgba(27,37,75,.85)!important;
+  transform:none!important;
+}
+.theme-option.active::after{
+  font-size:16px!important;
+}
+.theme-emerald{background:linear-gradient(135deg,#6B7A3A,#A3B36A)!important}
+.theme-gold{background:linear-gradient(135deg,#8B6F47,#C7A66A)!important}
+.theme-violet,.theme-emerald,.theme-sky,.theme-gold,.theme-navy{
+  filter:saturate(.92);
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+window.shareReport = async function() {
+  var area = document.getElementById('printArea');
+  if (!area) {
+    alert('اختر قطة للتقرير أولاً');
+    return;
+  }
+  try {
+    if (window.html2canvas) {
+      var canvas = await html2canvas(area, { backgroundColor: '#ffffff', scale: 2 });
+      canvas.toBlob(async function(blob) {
+        var file = new File([blob], 'تقرير-الإعاشة.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: 'تقرير الإعاشة', files: [file] });
+        } else if (navigator.share) {
+          var url = URL.createObjectURL(blob);
+          await navigator.share({ title: 'تقرير الإعاشة', text: 'تم إنشاء تقرير الإعاشة' });
+          URL.revokeObjectURL(url);
+        } else {
+          var url2 = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url2;
+          a.download = 'تقرير-الإعاشة.png';
+          a.click();
+          URL.revokeObjectURL(url2);
+        }
+      }, 'image/png');
+    } else {
+      window.print();
+    }
+  } catch (e) {
+    window.print();
+  }
+};
+</script>
+</head>
+<body>
+
+<header class="top-header" onclick="editUserName()" title="اضغط لتغيير الاسم">
+  <div>
+    <h1 id="greetingText" style="color: #EE5D50; font-size: 16px;">مرحباً بك</h1>
+    <p style="font-size: 13px; color: var(--text-sec); font-weight: 700;">نظام إدارة الإعاشة</p>
+  </div>
+  <div class="user-avatar" id="avatarText">م</div>
+</header>
+
+<main>
+  <!-- HOME VIEW -->
+  <section id="home" class="section active">
+    <div class="wallet-card">
+      <div class="wallet-card-header">
+        <span style="font-weight: 800; font-size: 16px;">البطاقة النشطة</span>
+        <select id="homeCollectionSelect" onchange="setSelectedCollection(this.value)"></select>
+      </div>
+      <span class="balance-label">الرصيد المتاح</span>
+      <div class="balance-value" id="balance">0 <span>﷼</span></div>
+      <div class="wallet-stats">
+        <div class="w-stat"><span class="glass-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><span>التحصيل</span><b id="totalCollected">0 ﷼</b></div>
+        <div class="w-stat"><span class="glass-icon"><svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span><span>المصروفات</span><b id="totalSpent">0 ﷼</b></div>
+        <div class="w-stat"><span class="glass-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></span><span>الأعضاء</span><b id="membersCount">0</b></div>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <button class="action-btn" onclick="openPaymentSheetQuick()">
+        <div class="action-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <span>تحصيل</span>
+      </button>
+      <button class="action-btn" onclick="openSheet('purchaseSheet')">
+        <div class="action-icon"><svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+        <span>شراء</span>
+      </button>
+      <button class="action-btn" onclick="goToSection('collections')">
+        <div class="action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <span>القطات</span>
+      </button>
+      <button class="action-btn" onclick="goToSection('reports')">
+        <div class="action-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+        <span>تقرير</span>
+      </button>
+    </div>
+
+    <div class="sec-header">
+      <h3>أحدث العمليات</h3>
+      <span class="badge" onclick="clearActivities()" style="cursor:pointer;" title="مسح السجل">سجل النشاط</span>
+    </div>
+    <div class="list-container" id="recentActivityList"></div>
+  </section>
+
+  <!-- MEMBERS VIEW -->
+  <section id="members" class="section">
+    <div class="sec-header">
+      <h3>سجل الأعضاء</h3>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="badge" id="memberCountBadge">0 عضو</span>
+        <button class="btn-sm" onclick="openSheet('addMemberSheet')">+ إضافة</button>
+      </div>
+    </div>
+    <div class="list-container" id="membersList"></div>
+  </section>
+
+  <!-- COLLECTIONS VIEW -->
+  <section id="collections" class="section">
+    <div id="collectionsListView">
+      <div class="sec-header">
+        <h3>سجل القطات</h3>
+        <button class="btn-sm" onclick="openSheet('addCollectionSheet')">+ قطة جديدة</button>
+      </div>
+      <div class="list-container" id="collectionsList"></div>
+    </div>
+    
+    <div id="collectionDetailView" style="display:none">
+      <div class="sec-header">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button onclick="closeCollectionDetail()" style="background:transparent; border:none; color:var(--text-main); cursor:pointer;"><svg style="width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.5;" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+          <h3 id="detailTitle">تفاصيل القطة</h3>
+        </div>
+      </div>
+      <div id="collectionDetailInfo">
+        <div class="collection-summary-grid" id="collectionSummaryGrid"></div>
+        <div class="progress-card" id="collectionProgressCard"></div>
+      </div>
+      
+      <div class="tabs">
+        <button class="tab active" id="filterAll" onclick="setPaymentFilter('all')">الكل</button>
+        <button class="tab" id="filterPaid" onclick="setPaymentFilter('paid')">سددوا</button>
+        <button class="tab" id="filterUnpaid" onclick="setPaymentFilter('unpaid')">متأخرين</button>
+      </div>
+      
+      <div class="list-container" id="paymentsList"></div>
+    </div>
+  </section>
+
+  <!-- PURCHASES VIEW -->
+  <section id="purchases" class="section">
+    <div class="sec-header">
+      <h3>المشتريات والمصروفات</h3>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <select id="purchaseFilterCollection" onchange="renderPurchases()" style="border:none; background:var(--border); padding:4px 10px; border-radius:8px; font-family:inherit; font-weight:800; font-size:12px;"></select>
+        <button class="btn-sm" onclick="openSheet('purchaseSheet')">+ فاتورة</button>
+      </div>
+    </div>
+    <div class="list-container" id="purchasesList"></div>
+  </section>
+
+  <!-- REPORTS VIEW -->
+  <section id="reports" class="section">
+    <div class="sec-header">
+      <h3>التقارير</h3>
+    </div>
+    <div class="form-group">
+      <label>اختر القطة للتقرير</label>
+      <select id="reportCollectionSelect" onchange="renderReports()"></select>
+    </div>
+    <div id="reportsContent"></div>
+    <button class="btn-primary" style="margin-top:16px;" onclick="shareReport()">
+      مشاركة التقرير
+      <svg class="share-icon-inline" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.7l6.8-4.4"/><path d="M8.6 13.3l6.8 4.4"/></svg>
+    </button>
+  </section>
+</main>
+
+<nav class="pill-nav">
+  <button class="nav-item active" data-target="home" onclick="goToSection('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></button>
+  <button class="nav-item" data-target="members" onclick="goToSection('members')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>
+  <button class="nav-item" data-target="collections" onclick="goToSection('collections')"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></button>
+  <button class="nav-item" data-target="purchases" onclick="goToSection('purchases')"><svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+</nav>
+
+<!-- Modals for Adding Data -->
+<div class="modal-overlay" id="addMemberSheet" onclick="closeSheet(event, 'addMemberSheet')">
+  <div class="bottom-sheet">
+    <div class="sheet-indicator"></div>
+    <h3 class="sheet-title">إضافة عضو جديد</h3>
+    <div class="form-group"><label>الاسم</label><input type="text" id="memName"></div>
+    <div class="form-group"><label>الجوال</label><input type="tel" id="memPhone"></div>
+    <button class="btn-primary" onclick="addMember()">حفظ العضو</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addCollectionSheet" onclick="closeSheet(event, 'addCollectionSheet')">
+  <div class="bottom-sheet">
+    <div class="sheet-indicator"></div>
+    <h3 class="sheet-title">إنشاء قطة جديدة</h3>
+    <div class="form-group"><label>اسم القطة</label><input type="text" id="colName" placeholder="مثال: إعاشة يوليو"></div>
+    <div class="form-group"><label>التاريخ</label><input type="date" id="colDate"></div>
+    <div class="form-group"><label>المبلغ المطلوب من كل عضو</label><input type="number" id="colAmount" placeholder="150"></div>
+    <button class="btn-primary" onclick="addCollection()">إنشاء</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="purchaseSheet" onclick="closeSheet(event, 'purchaseSheet')">
+  <div class="bottom-sheet">
+    <div class="sheet-indicator"></div>
+    <h3 class="sheet-title">تسجيل مشتريات</h3>
+    <div class="form-group"><label>القطة</label><select id="purCollection"></select></div>
+    <div style="display:flex; gap:12px;">
+      <div class="form-group" style="flex:2"><label>الصنف</label><input type="text" id="purItem"></div>
+      <div class="form-group" style="flex:1"><label>الكمية</label><input type="number" id="purQty" value="1"></div>
+    </div>
+    <div class="form-group"><label>السعر الإجمالي</label><input type="number" id="purPrice"></div>
+    <button class="btn-primary" onclick="addPurchase()">حفظ الفاتورة</button>
+  </div>
+</div>
+
+<!-- Status Menu Design -->
+<div class="modal-overlay" id="paymentSheet" onclick="closeSheet(event, 'paymentSheet')">
+  <div class="bottom-sheet" style="padding-bottom: 40px;">
+    <div class="sheet-indicator"></div>
+    
+    <div class="form-group" id="payMemberContainer" style="display:none; margin-bottom: 24px;">
+      <label>اختر العضو</label>
+      <select id="payMember"></select>
+    </div>
+
+    <div class="status-menu-list">
+      <button class="status-menu-item" onclick="updatePayment('paid')">
+        <span>دفع</span>
+        <span class="status-icon-box bg-green-soft"><svg><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></span>
+      </button>
+      
+      <button class="status-menu-item" onclick="updatePayment('unpaid')">
+        <span>لم يدفع</span>
+        <span class="status-icon-box bg-red-soft"><svg><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg></span>
+      </button>
+      
+      <button class="status-menu-item" onclick="updatePayment('leave')">
+        <span>إجازة</span>
+        <span class="status-icon-box bg-yellow-soft"><svg><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>
+      </button>
+      
+      <button class="status-menu-item" onclick="updatePayment('exempt')">
+        <span>معفى</span>
+        <span class="status-icon-box bg-blue-soft"><svg><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+      </button>
+    </div>
+    
+    <button class="btn-cancel-large" onclick="closeSheetDirect('paymentSheet')">إلغاء</button>
+  </div>
+</div>
+
+<!-- Dynamic Edit Action Sheet -->
+<div class="modal-overlay" id="editActionSheet" onclick="closeSheet(event, 'editActionSheet')">
+  <div class="bottom-sheet">
+    <div class="sheet-indicator"></div>
+    <h3 class="sheet-title" id="editSheetTitle">تعديل البيانات</h3>
+    <div id="editSheetFields"></div>
+    <button class="btn-primary" onclick="submitEditSheet()">حفظ التعديلات</button>
+  </div>
+</div>
+
+<script>
+window.onerror = function(msg, url, line) {
+  alert("حدث خطأ يمنع النظام من العمل: " + msg + "\nالسطر: " + line);
+  return false;
+};
+
+try {
+  var STORE_KEY = "easha-management-wallet";
+  var db = { members: [], collections: [], purchases: [], activities: [], userName: '', theme: 'violet' };
+  var selectedCollectionId = null;
+  var currentViewCollectionId = null;
+  var paymentFilter = 'all';
+  var currentEditCallback = null;
+
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+  function today() { return new Date().toISOString().slice(0,10); }
+  function money(n) { return Number(n||0).toLocaleString("en-US", {maximumFractionDigits:2}); }
+  function getInitials(name) { return name ? name.substring(0, 2) : 'ع'; }
+
+  function load() {
+    try {
+      var saved = localStorage.getItem(STORE_KEY);
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        db.members = parsed.members || [];
+        db.collections = parsed.collections || [];
+        db.purchases = parsed.purchases || [];
+        db.activities = parsed.activities || [];
+        db.userName = parsed.userName || '';
+        db.theme = parsed.theme || 'violet';
+      } else {
+        var v3 = localStorage.getItem("easha-management-v3");
+        if (v3) {
+          var parsedV3 = JSON.parse(v3);
+          db.members = parsedV3.members || [];
+          db.collections = parsedV3.collections || [];
+          db.purchases = parsedV3.purchases || [];
+          db.activities = [];
+        }
+      }
+    } catch (e) {
+      console.log("Data Load Error", e);
+    }
+  }
+
+  function save() { 
+    localStorage.setItem(STORE_KEY, JSON.stringify(db)); 
+    renderAll(); 
+  }
+
+  function logActivity(type, title, desc, amount) {
+    db.activities = db.activities || [];
+    db.activities.unshift({
+      id: uid(),
+      type: type,
+      title: title,
+      desc: desc,
+      amount: amount
+    });
+  }
+
+  function clearActivities() {
+    if(confirm("هل تريد مسح سجل العمليات؟")) {
+      db.activities = [];
+      save();
+    }
+  }
+
+  function goToSection(id) {
+    showSection(id);
+    var navs = document.querySelectorAll(".nav-item");
+    for (var i = 0; i < navs.length; i++) {
+      navs[i].classList.remove("active");
+      if (navs[i].getAttribute("data-target") === id) {
+        navs[i].classList.add("active");
+      }
+    }
+  }
+
+  function showSection(id) {
+    var sections = document.querySelectorAll(".section");
+    for (var s = 0; s < sections.length; s++) {
+      sections[s].classList.remove("active");
+    }
+    var targetEl = document.getElementById(id);
+    if (targetEl) targetEl.classList.add("active");
+    if (id !== 'collections') closeCollectionDetail(false);
+  }
+
+  function openSheet(id) { 
+    var el = document.getElementById(id);
+    if (el) el.classList.add('active'); 
+  }
+  function closeSheetDirect(id) { 
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active'); 
+  }
+  function closeSheet(e, id) { 
+    if (e.target.id === id) closeSheetDirect(id); 
+  }
+
+  function openPaymentSheetQuick() {
+    if(!selectedCollectionId && db.collections.length === 0) return alert("أضف قطة أولاً");
+    document.getElementById('payMemberContainer').style.display = 'block'; 
+    openSheet('paymentSheet');
+  }
+
+  function openPaymentSheetFor(memId) {
+    var sel = document.getElementById('payMember');
+    if (sel) sel.value = memId;
+    document.getElementById('payMemberContainer').style.display = 'none'; 
+    openSheet('paymentSheet');
+  }
+
+  function openEditSheet(title, fields, callback) {
+    currentEditCallback = callback;
+    document.getElementById('editSheetTitle').innerText = title;
+    
+    var fieldsHTML = "";
+    for (var i = 0; i < fields.length; i++) {
+      var f = fields[i];
+      var val = (f.value !== undefined && f.value !== null) ? f.value : "";
+      fieldsHTML += '<div class="form-group"><label>' + f.label + '</label><input type="' + (f.type || 'text') + '" id="editInput_' + f.id + '" value="' + val + '"></div>';
+    }
+    
+    document.getElementById('editSheetFields').innerHTML = fieldsHTML;
+    openSheet('editActionSheet');
+  }
+
+  function submitEditSheet() {
+    if (currentEditCallback) {
+      currentEditCallback();
+    }
+    closeSheetDirect('editActionSheet');
+  }
+
+
+  var THEMES = {
+    violet: { primary:'#4318FF', gradient:'linear-gradient(135deg, #4318FF 0%, #868CFF 100%)', nav:'#1B254B' },
+    emerald:{ primary:'#6B7A3A', gradient:'linear-gradient(135deg, #6B7A3A 0%, #A3B36A 100%)', nav:'#2F351F' },
+    sky:    { primary:'#0284C7', gradient:'linear-gradient(135deg, #0284C7 0%, #38BDF8 100%)', nav:'#12324A' },
+    gold:   { primary:'#8B6F47', gradient:'linear-gradient(135deg, #8B6F47 0%, #C7A66A 100%)', nav:'#3A2F21' },
+    navy:   { primary:'#111827', gradient:'linear-gradient(135deg, #111827 0%, #334155 100%)', nav:'#111827' }
+  };
+
+  function applyTheme(name) {
+    var t = THEMES[name] || THEMES.violet;
+    document.documentElement.style.setProperty('--primary', t.primary);
+    document.documentElement.style.setProperty('--primary-gradient', t.gradient);
+    document.documentElement.style.setProperty('--text-main', t.nav);
+    db.theme = name;
+    var opts = document.querySelectorAll('.theme-option');
+    for (var i = 0; i < opts.length; i++) {
+      opts[i].classList.toggle('active', opts[i].getAttribute('data-theme') === name);
+    }
+  }
+
+  function selectTheme(name) {
+    applyTheme(name);
+  }
+
+  function editUserName() {
+    openEditSheet("الملف الشخصي", [
+      { id: "uName", label: "اسم المستخدم", value: db.userName || "", type: "text" }
+    ], function() {
+      var newName = document.getElementById('editInput_uName').value.trim();
+      db.userName = newName;
+      save();
+    });
+
+    setTimeout(function(){
+      var holder = document.getElementById('editSheetFields');
+      if (!holder || document.getElementById('themePicker')) return;
+
+      var group = document.createElement('div');
+      group.className = 'form-group';
+      group.id = 'themePicker';
+
+      var label = document.createElement('label');
+      label.textContent = 'اختر الثيم';
+      group.appendChild(label);
+
+      var picker = document.createElement('div');
+      picker.className = 'theme-picker';
+
+      var themeList = [
+        ['violet', 'theme-violet', 'أزرق بنفسجي'],
+        ['emerald', 'theme-emerald', 'أخضر زمردي'],
+        ['sky', 'theme-sky', 'سماوي'],
+        ['gold', 'theme-gold', 'ذهبي'],
+        ['navy', 'theme-navy', 'كحلي']
+      ];
+
+      for (var i = 0; i < themeList.length; i++) {
+        (function(themeName, cls, labelText){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'theme-option ' + cls;
+          btn.setAttribute('data-theme', themeName);
+          btn.setAttribute('aria-label', labelText);
+          btn.onclick = function(){ selectTheme(themeName); };
+          picker.appendChild(btn);
+        })(themeList[i][0], themeList[i][1], themeList[i][2]);
+      }
+
+      group.appendChild(picker);
+      holder.appendChild(group);
+      applyTheme(db.theme || 'violet');
+    }, 30);
+  }
+
+  function addMember() {
+    var name = document.getElementById('memName').value.trim();
+    if (!name) return alert("اكتب الاسم");
+    db.members.push({ id: uid(), name: name, phone: document.getElementById('memPhone').value });
+    
+    logActivity('member', 'إضافة عضو جديد', name, null);
+    
+    document.getElementById('memName').value = ''; 
+    document.getElementById('memPhone').value = '';
+    closeSheetDirect('addMemberSheet'); 
+    save();
+  }
+
+  function editMember(id) {
+    var m = null;
+    for(var i=0; i<db.members.length; i++) { if(db.members[i].id === id) m = db.members[i]; }
+    if(!m) return;
+    
+    openEditSheet("تعديل بيانات العضو", [
+      { id: "mName", label: "اسم العضو", value: m.name, type: "text" },
+      { id: "mPhone", label: "رقم الجوال", value: m.phone || "", type: "tel" }
+    ], function() {
+      var newName = document.getElementById('editInput_mName').value.trim();
+      var newPhone = document.getElementById('editInput_mPhone').value;
+      
+      if (newName) m.name = newName;
+      m.phone = newPhone;
+      save();
+    });
+  }
+
+  function deleteMember(id) {
+    if(!confirm("هل أنت متأكد من حذف هذا العضو؟")) return;
+    var newMembers = [];
+    for(var i=0; i<db.members.length; i++) {
+      if(db.members[i].id !== id) newMembers.push(db.members[i]);
+    }
+    db.members = newMembers;
+    for(var j=0; j<db.collections.length; j++) {
+      if(db.collections[j].payments && db.collections[j].payments[id]) {
+          delete db.collections[j].payments[id];
+      }
+    }
+    save();
+  }
+
+  function addCollection() {
+    if (db.members.length === 0) return alert("أضف أعضاء أولاً");
+    var name = document.getElementById('colName').value.trim() || 'قطة ' + today();
+    var amount = Number(document.getElementById('colAmount').value || 0);
+    var payments = {};
+    for (var i = 0; i < db.members.length; i++) {
+      payments[db.members[i].id] = { status: 'unpaid', amount: amount };
+    }
+    var c = { id: uid(), name: name, date: document.getElementById('colDate').value, amount: amount, payments: payments };
+    db.collections.unshift(c);
+    
+    logActivity('collection', 'إنشاء قطة جديدة', name, null);
+    
+    selectedCollectionId = c.id;
+    document.getElementById('colName').value = '';
+    closeSheetDirect('addCollectionSheet'); 
+    save();
+  }
+
+  function editCollectionRecord(event, id) {
+    if(event) event.stopPropagation();
+    var c = null;
+    for(var i=0; i<db.collections.length; i++) { if(db.collections[i].id === id) c = db.collections[i]; }
+    if(!c) return;
+
+    openEditSheet("تعديل بيانات القطة", [
+      { id: "cName", label: "اسم القطة", value: c.name, type: "text" },
+      { id: "cAmount", label: "المبلغ الأساسي للقطة", value: c.amount || 0, type: "number" }
+    ], function() {
+      var newName = document.getElementById('editInput_cName').value.trim();
+      var newAmount = document.getElementById('editInput_cAmount').value;
+      
+      if (newName) c.name = newName;
+      var parsedAmt = Number(newAmount);
+      if (!isNaN(parsedAmt)) c.amount = parsedAmt;
+      save();
+    });
+  }
+
+  function addPurchase() {
+    var latest = latestCollection();
+    var colId = document.getElementById('purCollection').value || (latest ? latest.id : "");
+    if (!colId) return alert("اختر قطة من القائمة المنسدلة بالأعلى");
+    var item = document.getElementById('purItem').value.trim();
+    if (!item) return alert("اكتب اسم الصنف المشتري");
+    
+    var price = Number(document.getElementById('purPrice').value || 0);
+    
+    db.purchases.unshift({
+      id: uid(), collectionId: colId, date: today(), item: item,
+      qty: Number(document.getElementById('purQty').value || 1),
+      price: price
+    });
+    
+    logActivity('purchase', 'تسجيل مشتريات', item, price);
+    
+    document.getElementById('purItem').value = ''; 
+    document.getElementById('purPrice').value = '';
+    closeSheetDirect('purchaseSheet'); 
+    save();
+  }
+
+  function editPurchase(id) {
+    var p = null;
+    for(var i=0; i<db.purchases.length; i++) { if(db.purchases[i].id === id) p = db.purchases[i]; }
+    if(!p) return;
+
+    openEditSheet("تعديل الفاتورة", [
+      { id: "pItem", label: "اسم الصنف", value: p.item, type: "text" },
+      { id: "pQty", label: "الكمية", value: p.qty || 1, type: "number" },
+      { id: "pPrice", label: "السعر الإجمالي", value: p.price || 0, type: "number" }
+    ], function() {
+      var newItem = document.getElementById('editInput_pItem').value.trim();
+      var newQty = document.getElementById('editInput_pQty').value;
+      var newPrice = document.getElementById('editInput_pPrice').value;
+
+      if (newItem) p.item = newItem;
+      p.qty = Number(newQty || p.qty);
+      p.price = Number(newPrice || p.price);
+      save();
+    });
+  }
+
+  function deletePurchase(id) {
+    if(!confirm("هل أنت متأكد من حذف هذه الفاتورة؟")) return;
+    var newP = [];
+    for(var i=0; i<db.purchases.length; i++) {
+      if(db.purchases[i].id !== id) newP.push(db.purchases[i]);
+    }
+    db.purchases = newP;
+    save();
+  }
+
+  function updatePayment(status) {
+    var memId = document.getElementById('payMember').value;
+    var c = selectedCollection();
+    if (!c || !memId) return;
+    if (!c.payments) c.payments = {};
+    if (!c.payments[memId]) c.payments[memId] = { amount: c.amount || 0 };
+    c.payments[memId].status = status;
+    closeSheetDirect('paymentSheet'); 
+    save();
+  }
+
+  function deleteCurrentCollection() {
+    if (!confirm("هل أنت متأكد من حذف هذه القطة؟")) return;
+    var newCollections = [];
+    for (var i = 0; i < db.collections.length; i++) {
+      if (db.collections[i].id !== currentViewCollectionId) {
+        newCollections.push(db.collections[i]);
+      }
+    }
+    db.collections = newCollections;
+    
+    var newPurchases = [];
+    for (var j = 0; j < db.purchases.length; j++) {
+      if (db.purchases[j].collectionId !== currentViewCollectionId) {
+        newPurchases.push(db.purchases[j]);
+      }
+    }
+    db.purchases = newPurchases;
+    
+    if (selectedCollectionId === currentViewCollectionId) selectedCollectionId = null;
+    closeCollectionDetail(); 
+    save();
+  }
+
+  function editPaymentAmount(memId) {
+    var c = null;
+    for(var i=0; i<db.collections.length; i++) { if(db.collections[i].id === currentViewCollectionId) c = db.collections[i]; }
+    if(!c) return;
+    var p = (c.payments && c.payments[memId]) ? c.payments[memId] : { amount: c.amount || 0 };
+
+    openEditSheet("تعديل مبلغ القطة للعضو", [
+      { id: "payAmt", label: "المبلغ المطلوب من هذا العضو", value: p.amount, type: "number" }
+    ], function() {
+      var newAmount = document.getElementById('editInput_payAmt').value;
+      if (!c.payments) c.payments = {};
+      if (!c.payments[memId]) c.payments[memId] = { status: 'unpaid' };
+      c.payments[memId].amount = Number(newAmount || 0);
+      save();
+    });
+  }
+
+  function latestCollection() { return db.collections[0] || null; }
+  function selectedCollection() { 
+    var found = null;
+    for (var i = 0; i < db.collections.length; i++) {
+      if (db.collections[i].id === selectedCollectionId) {
+        found = db.collections[i];
+        break;
+      }
+    }
+    return found || latestCollection(); 
+  }
+  function setSelectedCollection(id) { selectedCollectionId = id; renderAll(); }
+
+  function collectionTotals(c) {
+    if (!c) return {collected: 0, spent: 0, balance: 0, paid: 0};
+    var ps = c.payments || {};
+    var collected = 0;
+    var paidCount = 0;
+    var keys = Object.keys(ps);
+    for (var k = 0; k < keys.length; k++) {
+      var p = ps[keys[k]];
+      if (p.status === 'paid') {
+        collected += Number(p.amount || c.amount || 0);
+        paidCount++;
+      }
+    }
+    var spent = 0;
+    for (var j = 0; j < db.purchases.length; j++) {
+      if (db.purchases[j].collectionId === c.id) {
+        spent += Number(db.purchases[j].price || 0);
+      }
+    }
+    return { collected: collected, spent: spent, balance: collected - spent, paid: paidCount };
+  }
+
+  function renderAll() {
+    applyTheme(db.theme || 'violet');
+    var greetEl = document.getElementById('greetingText');
+    greetEl.style.color = 'var(--text-main)';
+    greetEl.style.fontSize = '22px';
+    greetEl.innerText = db.userName ? ("مرحباً " + db.userName) : "مرحباً بك";
+    
+    document.getElementById('avatarText').innerText = db.userName ? db.userName.substring(0, 1) : 'م';
+
+    var c = selectedCollection();
+    var opts = "";
+    if (db.collections.length === 0) {
+      opts = '<option value="">لا توجد قطات</option>';
+    } else {
+      for (var oc = 0; oc < db.collections.length; oc++) {
+        opts += '<option value="' + db.collections[oc].id + '">' + db.collections[oc].name + '</option>';
+      }
+    }
+    
+    document.getElementById('homeCollectionSelect').innerHTML = opts;
+    document.getElementById('purCollection').innerHTML = opts;
+    document.getElementById('purchaseFilterCollection').innerHTML = '<option value="">كل القطات</option>' + opts;
+    document.getElementById('reportCollectionSelect').innerHTML = opts;
+    
+    if (c) {
+      document.getElementById('homeCollectionSelect').value = c.id;
+      document.getElementById('purCollection').value = c.id;
+      document.getElementById('reportCollectionSelect').value = c.id;
+      
+      var payMemberOpts = "";
+      for (var mIdx = 0; mIdx < db.members.length; mIdx++) {
+        var memb = db.members[mIdx];
+        var pStatus = (c.payments && c.payments[memb.id]) ? c.payments[memb.id].status : 'unpaid';
+        var statusText = pStatus === 'paid' ? 'مسدد' : (pStatus === 'exempt' ? 'معفى' : (pStatus === 'leave' ? 'إجازة' : 'متأخر'));
+        payMemberOpts += '<option value="' + memb.id + '">' + memb.name + ' (' + statusText + ')</option>';
+      }
+      document.getElementById('payMember').innerHTML = payMemberOpts;
+    }
+
+    var t = collectionTotals(c);
+    document.getElementById('balance').innerHTML = money(t.balance) + ' <span>﷼</span>';
+    document.getElementById('totalCollected').innerText = money(t.collected) + ' ﷼';
+    document.getElementById('totalSpent').innerText = money(t.spent) + ' ﷼';
+    document.getElementById('membersCount').innerText = db.members.length;
+
+    // --- سجل النشاط الذكي ---
+    var acts = db.activities || [];
+    var actHTML = "";
+    for (var a = 0; a < Math.min(acts.length, 5); a++) {
+      var act = acts[a];
+      var icon = "", colorClass = "", descClass = "";
+      
+      // أيقونات صريحة بخطوط خارجية وألوان واضحة ومفرغة
+      if (act.type === 'member') {
+        icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>';
+        colorClass = "icon-blue";
+        descClass = "act-title-blue";
+      } else if (act.type === 'collection') {
+        icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+        colorClass = "icon-green";
+        descClass = "act-title-green";
+      } else if (act.type === 'purchase') {
+        icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>';
+        colorClass = "icon-red";
+        descClass = "act-title-red";
+      }
+      
+      var trailing = act.amount ? '<b style="color:var(--danger)">- ' + money(act.amount) + ' ﷼</b>' : '';
+      
+      // وضعنا desc (اسم الشخص أو الشيء) ليكون هو العنوان الكبير، و title (الوصف) ليكون النص الصغير الملون
+      actHTML += '<div class="list-item"><div class="item-main"><div class="item-icon ' + colorClass + '">' + icon + '</div><div class="item-content"><h4>' + act.desc + '</h4><p class="' + descClass + '">' + act.title + '</p></div><div class="item-trailing">' + trailing + '</div></div></div>';
+    }
+    
+    if (actHTML === "") {
+      actHTML = '<div class="empty-state" style="padding:20px;">لا توجد عمليات حديثة مسجلة</div>';
+    }
+    document.getElementById('recentActivityList').innerHTML = actHTML;
+
+    // --- بقية الشاشات ---
+    document.getElementById('memberCountBadge').innerText = db.members.length + ' عضو';
+    var memHTML = "";
+    if (db.members.length > 0) {
+      for (var mh = 0; mh < db.members.length; mh++) {
+        var m = db.members[mh];
+        var actionBtns = '<div class="action-row"><button class="btn-icon edit" onclick="editMember(\''+m.id+'\')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="btn-icon delete" onclick="deleteMember(\''+m.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>';
+        
+        memHTML += '<div class="list-item"><div class="item-main"><div class="item-icon icon-blue">' + getInitials(m.name) + '</div><div class="item-content"><h4>' + m.name + '</h4><p>' + (m.phone || 'بدون رقم') + '</p></div><div class="item-trailing">' + actionBtns + '</div></div></div>';
+      }
+    } else {
+      memHTML = '<div class="empty-state">لم يتم إضافة أعضاء</div>';
+    }
+    document.getElementById('membersList').innerHTML = memHTML;
+
+    var colHTML = "";
+    if (db.collections.length > 0) {
+      for (var ch = 0; ch < db.collections.length; ch++) {
+        var col = db.collections[ch];
+        var ct = collectionTotals(col);
+        var actionBtns = '<div class="action-row"><button class="btn-icon edit" onclick="editCollectionRecord(event, \''+col.id+'\')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="btn-icon delete" onclick="deleteCollectionRecord(event, \''+col.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>';
+
+        colHTML += '<div class="list-item" onclick="openCollectionDetail(\'' + col.id + '\')" style="cursor:pointer"><div class="item-main"><div class="item-icon icon-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="item-content"><h4>' + col.name + '</h4><p>' + col.date + '</p></div><div class="item-trailing"><b>' + money(ct.balance) + ' ﷼</b>' + actionBtns + '</div></div></div>';
+      }
+    } else {
+      colHTML = '<div class="empty-state">لا توجد قطات</div>';
+    }
+    document.getElementById('collectionsList').innerHTML = colHTML;
+
+    renderPurchases();
+    renderReports();
+    if (currentViewCollectionId) renderCollectionDetail();
+  }
+
+  function renderPurchases() {
+    var filterId = document.getElementById('purchaseFilterCollection').value;
+    var pHTML = "";
+    var found = false;
+    for (var i = 0; i < db.purchases.length; i++) {
+      var p = db.purchases[i];
+      if (!filterId || p.collectionId === filterId) {
+        found = true;
+        var actionBtns = '<div class="action-row"><button class="btn-icon edit" onclick="editPurchase(\''+p.id+'\')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="btn-icon delete" onclick="deletePurchase(\''+p.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>';
+
+        pHTML += '<div class="list-item"><div class="item-main"><div class="item-icon icon-red"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div><div class="item-content"><h4>' + p.item + '</h4><p>' + p.date + ' • الكمية: ' + p.qty + '</p></div><div class="item-trailing"><b style="color:var(--danger)">' + money(p.price) + ' ﷼</b>' + actionBtns + '</div></div></div>';
+      }
+    }
+    document.getElementById('purchasesList').innerHTML = found ? pHTML : '<div class="empty-state">لا توجد مشتريات مسجلة</div>';
+  }
+
+  function openCollectionDetail(id) {
+    currentViewCollectionId = id;
+    document.getElementById('collectionsListView').style.display = 'none';
+    document.getElementById('collectionDetailView').style.display = 'block';
+    renderCollectionDetail();
+  }
+
+  function closeCollectionDetail(callRender) {
+    currentViewCollectionId = null;
+    document.getElementById('collectionsListView').style.display = 'block';
+    document.getElementById('collectionDetailView').style.display = 'none';
+    if (callRender !== false) renderAll();
+  }
+
+  function setPaymentFilter(type) {
+    paymentFilter = type;
+    var tabs = document.querySelectorAll('.tabs .tab');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].classList.remove('active');
+    }
+    var activeTab = type === 'all' ? 'filterAll' : (type === 'paid' ? 'filterPaid' : 'filterUnpaid');
+    document.getElementById(activeTab).classList.add('active');
+    renderCollectionDetail();
+  }
+
+
+  function memberWord(n) {
+    n = Number(n || 0);
+    if (n === 1) return 'عضو';
+    if (n === 2) return 'عضوان';
+    return 'أعضاء';
+  }
+
+  function collectionFullTotals(c) {
+    var base = collectionTotals(c);
+    var totalMembers = db.members.length;
+    var paid = base.paid || 0;
+    var expected = totalMembers * Number((c && c.amount) || 0);
+    var remaining = Math.max(0, expected - base.collected);
+    var percent = totalMembers ? Math.round((paid / totalMembers) * 100) : 0;
+    return { collected: base.collected || 0, spent: base.spent || 0, balance: base.balance || 0, paid: paid, totalMembers: totalMembers, remaining: remaining, percent: percent };
+  }
+
+  function renderCollectionSummary(c) {
+    var t = collectionFullTotals(c);
+    var summary = document.getElementById('collectionSummaryGrid');
+    var progress = document.getElementById('collectionProgressCard');
+    if (!summary || !progress) return;
+    summary.innerHTML =
+      '<div class="collection-summary-card summary-green"><span class="summary-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><div class="summary-content"><span class="summary-label">المجموع</span><span class="summary-value">' + money(t.collected) + ' ﷼</span></div></div>' +
+      '<div class="collection-summary-card summary-orange"><span class="summary-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div class="summary-content"><span class="summary-label">المتبقي</span><span class="summary-value">' + money(t.remaining) + ' ﷼</span></div></div>' +
+      '<div class="collection-summary-card summary-blue"><span class="summary-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="3"/><path d="M4 20c.7-4 3.6-6 8-6s7.3 2 8 6"/></svg></span><div class="summary-content"><span class="summary-label">عدد الأعضاء</span><span class="summary-value">' + money(t.totalMembers) + ' ' + memberWord(t.totalMembers) + '</span></div></div>' +
+      '<div class="collection-summary-card summary-purple"><span class="summary-icon"><svg viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/><circle cx="12" cy="12" r="9"/></svg></span><div class="summary-content"><span class="summary-label">من دفع</span><span class="summary-value">' + money(t.paid) + ' ' + memberWord(t.paid) + '</span></div></div>';
+    progress.innerHTML =
+      '<div class="progress-head"><span>نسبة التحصيل</span><b>' + t.percent + '%</b></div>' +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + t.percent + '%"></div></div>';
+  }
+
+
+  function statusIconHTML(status) {
+    if (status === 'paid') {
+      return '<div class="status-avatar paid"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>';
+    }
+    if (status === 'leave') {
+      return '<div class="status-avatar leave"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M12 14v4"/><path d="M10 16h4"/></svg></div>';
+    }
+    if (status === 'exempt') {
+      return '<div class="status-avatar exempt"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></div>';
+    }
+    return '<div class="status-avatar unpaid"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></div>';
+  }
+
+  function renderCollectionDetail() {
+    var c = null;
+    for (var i = 0; i < db.collections.length; i++) {
+      if (db.collections[i].id === currentViewCollectionId) { c = db.collections[i]; break; }
+    }
+    if (!c) return;
+    
+    document.getElementById('detailTitle').innerText = c.name;
+    renderCollectionSummary(c);
+    
+    var mHTML = "";
+    var found = false;
+    for (var j = 0; j < db.members.length; j++) {
+      var m = db.members[j];
+      var p = (c.payments && c.payments[m.id]) ? c.payments[m.id] : { status: 'unpaid', amount: c.amount || 0 };
+      
+      var show = true;
+      if (paymentFilter === 'paid' && p.status !== 'paid') show = false;
+      if (paymentFilter === 'unpaid' && p.status !== 'unpaid') show = false;
+      
+      if (show) {
+        found = true;
+        var statusHTML = p.status === 'paid' ? '<span class="status-badge status-paid">مسدد</span>' : 
+                         (p.status === 'exempt' ? '<span class="status-badge" style="background:var(--primary); color:white;">معفى</span>' : 
+                         (p.status === 'leave' ? '<span class="status-badge" style="background:#FFF8E1; color:#F9A825;">إجازة</span>' :
+                         '<span class="status-badge status-unpaid">متأخر</span>'));
+        
+        var actionBtns = '<div class="action-row"><button class="btn-icon edit" onclick="editPaymentAmount(\''+m.id+'\')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="btn-icon more" onclick="openPaymentSheetFor(\''+m.id+'\')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button></div>';
+
+        mHTML += '<div class="list-item"><div class="item-main">' + statusIconHTML(p.status) + '<div class="item-content"><h4>' + m.name + '</h4><p>المطلوب: ' + money(p.amount) + ' ﷼</p></div><div class="item-trailing">' + actionBtns + '</div></div></div>';
+      }
+    }
+    document.getElementById('paymentsList').innerHTML = found ? mHTML : '<div class="empty-state">لا يوجد أعضاء في هذا التصنيف</div>';
+  }
+
+  function renderReports() {
+    var id = document.getElementById('reportCollectionSelect').value;
+    var c = null;
+    for (var i = 0; i < db.collections.length; i++) {
+      if (db.collections[i].id === id) { c = db.collections[i]; break; }
+    }
+    if (!c) { document.getElementById('reportsContent').innerHTML = ''; return; }
+
+    var rHTML = "";
+    for (var j = 0; j < db.members.length; j++) {
+      var m = db.members[j];
+      var p = (c.payments && c.payments[m.id]) ? c.payments[m.id] : { status: 'unpaid', amount: c.amount || 0 };
+      var statusStr = p.status === 'paid' ? 'مسدد' : (p.status === 'exempt' ? 'معفى' : (p.status === 'leave' ? 'إجازة' : 'متأخر'));
+      rHTML += '<tr><td>' + (j+1) + '</td><td class="muted-name">' + m.name + '</td><td class="amount-cell">' + money(p.amount) + ' ﷼</td><td class="status-cell">' + statusStr + '</td></tr>';
+    }
+
+    document.getElementById('reportsContent').innerHTML =
+      '<div class="report-box report-a4" id="printArea">' +
+        '<div class="report-title">' +
+          '<h2>نظام إدارة الإعاشة</h2>' +
+          '<h3>تقرير ' + c.name + '</h3>' +
+          '<p>التاريخ: ' + (c.date || '-') + '</p>' +
+        '</div>' +
+        '<table class="report-table"><thead><tr><th>#</th><th>الاسم</th><th>القطة</th><th>الحالة</th></tr></thead><tbody>' + rHTML + '</tbody></table>'+
+      '</div>';
+  }
+
+  window.onload = function() {
+    load();
+    applyTheme(db.theme || 'violet');
+    var dateInput = document.getElementById('colDate');
+    if (dateInput) dateInput.value = today();
+    renderAll();
+  };
+
+} catch (globalError) {
+  alert("عذراً، حدث خطأ غير متوقع: " + globalError.message);
+}
+</script>
+<script>
+
+window.shareReport = async function() {
+  var area = document.getElementById('printArea');
+  if (!area) {
+    alert('اختر قطة للتقرير أولاً');
+    return;
+  }
+  try {
+    if (window.html2canvas) {
+      var clone = area.cloneNode(true);
+      clone.style.width = '794px';
+      clone.style.minHeight = '1123px';
+      clone.style.position = 'fixed';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.borderRadius = '0';
+      document.body.appendChild(clone);
+      var canvas = await html2canvas(clone, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        width: 794,
+        height: 1123,
+        windowWidth: 794,
+        windowHeight: 1123
+      });
+      document.body.removeChild(clone);
+      canvas.toBlob(async function(blob) {
+        var file = new File([blob], 'تقرير-الإعاشة-A4.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ title: 'تقرير الإعاشة', files: [file] });
+        } else {
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'تقرير-الإعاشة-A4.png';
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png');
+    } else {
+      window.print();
+    }
+  } catch (e) {
+    window.print();
+  }
+};
+
+</script>
+</body>
+</html>
