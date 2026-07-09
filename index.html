@@ -1132,6 +1132,32 @@ try {
     save();
   }
 
+  function deleteCollectionRecord(event, id) {
+    if (event) event.stopPropagation();
+    if (!confirm("هل أنت متأكد من حذف هذه القطة؟")) return;
+
+    var newCollections = [];
+    for (var i = 0; i < db.collections.length; i++) {
+      if (db.collections[i].id !== id) {
+        newCollections.push(db.collections[i]);
+      }
+    }
+    db.collections = newCollections;
+
+    var newPurchases = [];
+    for (var j = 0; j < db.purchases.length; j++) {
+      if (db.purchases[j].collectionId !== id) {
+        newPurchases.push(db.purchases[j]);
+      }
+    }
+    db.purchases = newPurchases;
+
+    if (selectedCollectionId === id) selectedCollectionId = null;
+    if (currentViewCollectionId === id) closeCollectionDetail(false);
+
+    save();
+  }
+
   function deleteCurrentCollection() {
     if (!confirm("هل أنت متأكد من حذف هذه القطة؟")) return;
     var newCollections = [];
